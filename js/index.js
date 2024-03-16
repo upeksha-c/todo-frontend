@@ -1,5 +1,8 @@
 const BACKEND_ROOT_URL = 'http://localhost:3001'
 
+import { Todos } from "./class/Todos.js";
+const todos = new Todos(BACKEND_ROOT_URL)
+
 //Get reference to the div element
 let divList = document.querySelector('body');
 //get reference to input element
@@ -15,21 +18,19 @@ input.disabled = true;
 const renderTask = (task) => {
     const li = document.createElement('li')
     li.setAttribute('class','list-group-item')
-    li.innerHTML = task
+    li.innerHTML = task.getText()
     list.append(li)
 }
 
-const getTasks = async() => {
-    try {
-        const response = await fetch(BACKEND_ROOT_URL)
-        const json = await response.json()
-        json.forEach(task => {
-            renderTask(task.description)
+const getTasks = () => {
+    todos.getTasks().then((tasks) => {
+        tasks.forEach(task => {
+            renderTask(task)
         })
-        input.disabled = false
-    } catch (error){
-        alert("Error retrieving tasks" + error.message)
-    }
+        input.disabled = false;
+    }).catch((error) => {
+        alert(error)
+    })
 }
 
 //define function for saving task
@@ -59,10 +60,11 @@ input.addEventListener("keypress",(event) => {
         //get the text content of input field to a variable
         const task = input.value.trim();
         //check wether the provided input is empty or not
-        if(task != ''){
-            saveTask(task).then((json) => {
+        if(task !== ''){
+            todos.addTask(task).then((task) => {
                 renderTask(task)
                 input.value = ''
+                input.focus()
             })
             
         }        
