@@ -4,6 +4,8 @@ const {Pool} = require('pg');
 
 const app = express();
 app.use(cors());
+app.use(express.json());//reading posted values from theclient as JSON.
+
 const port = 3001
 
 /*app.get("/",(req,res) => {
@@ -32,4 +34,19 @@ const openDb = () => {
     return pool
 }
 
+//Implement a post handler, which is used to receive value(s) from the client and execute insert into statement into the database. SQL contains some parameters ($1) which are provided as an array when calling the query method. 
+
+app.post("/new",(req,res) => {
+    const pool = openDb()
+
+    pool.query('insert into task (description) values ($1) returning *',
+    [req.body.description],
+    (error,result) => {
+        if (error) {
+            res.status(500).json({error: error.message})
+        }   else {
+            res.status(200).json({id : result.rows[0].id})
+        }
+    })
+})
 app.listen(port)
